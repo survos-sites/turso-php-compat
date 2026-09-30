@@ -1,5 +1,9 @@
 # Turso for PHP: native driver and SQLite compatibility experiments
 
+**Project status:** experiments are parked pending Turso 1.0. Keep SQLite for
+current applications; retain this harness and the measured baseline for a future
+rerun. No production migration is planned from these preliminary results.
+
 ## Start here: reproducible native comparison
 
 Native Turso runs beside stock PDO SQLite; it does not replace PHP's SQLite library.
