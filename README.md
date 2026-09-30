@@ -1,79 +1,92 @@
-# Turso PR #8498: PHP/Folio compatibility experiment
+# Turso for PHP: compatibility harness and experimental runtime
 
-Repository: `survos-sites/turso-php-compat`. Local checkout: `~/sites/turso-php-compat`.
+Use the ordinary PDO SQLite driver with Turso's Rust SQLite-compatible engine. No custom Doctrine driver or application source patches.
 
-**Observed proof of concept:** real Folio reads work through stock Doctrine DBAL on Turso, including a live FrankenPHP request, when generated columns are enabled at startup. See [REPORT.md](REPORT.md) for the remaining incompatibilities.
+**Verified:** the unmodified [Symfony Demo v2.8.1](https://github.com/symfony/demo/tree/c1691a84ccf7a4836d7a48355562b3c300924db5) passes **51 tests / 115 assertions** on stock SQLite and Turso PR #8498. Its blog also serves through Debian-based FrankenPHP. This example needs no experimental feature opt-in.
 
-This is an isolated Linux container harness, not an application migration or deployment. Start with `REPORT.md` for observed results. No production database or application configuration is modified.
+This is an experiment, not a production-ready SQLite replacement. See [findings](REPORT.md), including read-only enforcement and error-reporting differences.
 
-## Quick DBAL proof of concept
+## Reproduce from a clean checkout
 
-```sh
-python3 tests/prepare_fixtures.py
-./run.sh                  # expected non-zero when incompatibilities are detected
-./demo.sh                 # Turso with experimental generated columns enabled
-./demo.sh stock           # same DBAL application, stock SQLite
-./serve.sh                # http://localhost:8498/dbal.php (FrankenPHP)
+Requirements: Docker/BuildKit with about 8 GB or more available memory, Python 3, Git, Bash, and internet access during setup. No host PHP, Composer, Symfony CLI, or private dataset is required. The verified platform is **Linux arm64** (containers on Apple Silicon). Other architectures have not been validated.
+
+```bash
+git clone https://github.com/survos-sites/turso-php-compat.git
+cd turso-php-compat
+./build.sh
+./fetch-demo.sh
+./demo.sh stock
+./demo.sh turso
 ```
 
-`demo.php` uses ordinary Doctrine `DriverManager::getConnection()`, a join/count query, and a parameterized query reading a generated sort column. No custom DBAL driver is used. The demo uses a synthetic Folio by default. To use a local checkpointed Folio instead, run `python3 tests/prepare_fixtures.py --folio /path/to/file.folio` before the demo. Source files are copied and are never opened by Turso in place.
+`build.sh` builds the pinned Turso source and four PHP images: stock/Turso PHP CLI, and stock/Turso Debian FrankenPHP. Initial builds take several minutes. Build output is saved under `results/`. It uses `--load`, so images are available locally even with a docker-container BuildKit builder. Nothing is pushed to a container registry.
 
-## Reproduce
+`fetch-demo.sh` downloads the official Symfony Demo SQLite database from commit `c1691a84ccf7a4836d7a48355562b3c300924db5`, verifies SHA-256 `8c4c99c238c083e52aaefd060185d0c55f2a719a7ab15d721e8fa375aea35b2e`, and checks database integrity. The dataset has 30 blog posts, users, comments, and tags. It is fetched on demand, not committed here. Upstream distributes the demo under the [MIT license](https://github.com/symfony/demo/blob/c1691a84ccf7a4836d7a48355562b3c300924db5/LICENSE).
 
-Requirements: Docker with BuildKit, Python 3, network access for the initial builds, and roughly 8 GB of Docker memory. Tested on Linux arm64 containers on an Apple Silicon host. AMD64/Dokku-host execution has not been verified.
+`demo.php` is a short DBAL program: it opens a disposable copy, runs a join/count query and a parameterized tag query, and prints JSON. Both engines should return the same post data; the `engine` label differs. The harness locks PHP 8.4 / DBAL 4.5.0 / ORM 3.5.8 / Symfony 7.3.x dependencies.
 
-```sh
-./run.sh
-# Optional diagnostic: enable the C library's experimental features at process startup.
-./run-experimental.sh
+To serve that DBAL example through FrankenPHP:
+
+```bash
+./serve.sh
+# Open http://localhost:8498/dbal.php
+# Stop/remove it when finished:
+docker stop turso-php-compat-demo
+docker rm turso-php-compat-demo
 ```
 
-The demo server stays running until `docker stop turso-php-compat-demo`; it binds only to localhost.
+## Prove the actual Symfony application works
 
-Both test scripts finish with a non-zero exit status if the PHP differential suite contains incompatibilities; results remain saved for inspection. HTTP outcomes are reported separately in JSON.
+This uses the official application's own code, templates, database and Composer lock, without changing its database driver or SQL. At the pinned revision, its lock contains Symfony 7.3.2, DBAL 4.3.2 and ORM 3.5.2.
 
-The first script builds Turso CLI and its SQLite-compatible C library from exact PR commit `faac0360a3304b598da068a9c6fce356d532c195`. It first compares six Folio reads in Turso CLI against Python's stock SQLite, both with and without `--experimental-generated-columns`. It then tests stock and Turso PHP 8.4, stock and Turso Debian-based FrankenPHP, and finally real HTTP requests to FrankenPHP bound only to localhost on temporary ports. Each HTTP container is stopped afterward.
-
-`--load` is intentional: the user's BuildKit builder uses the docker-container driver. No image is pushed. The experimental script compiles a startup shim inside the already-built container, then mounts it read-only for the diagnostic runs.
-
-`Dockerfile.turso` and the Turso build stages in `Dockerfile.php` contain the same build recipe. They build both packages together; Cargo feature unification therefore includes CLI-requested core features (including FTS) in this library build. This is a recorded build choice, not a claim to reproduce the author's original 287-test environment. The `capi` Cargo feature is empty at this revision.
-
-## PHP build
-
-The stock images have SQLite compiled into PHP, so installing a second extension or using `LD_PRELOAD` alone is not a sound replacement test. `tests/rebuild-php.sh` rebuilds the image's bundled PHP 8.4 source, without source patches, using:
-
-```sh
-SQLITE_CFLAGS='-I/opt/turso/include'
-SQLITE_LIBS='-L/opt/turso/lib -Wl,-rpath,/opt/turso/lib -lturso_sqlite3'
+```bash
+./examples/symfony/setup.sh
+./examples/symfony/test.sh
+# Expected on both engines: OK (51 tests, 115 assertions)
+./examples/symfony/serve.sh turso
+# Open http://localhost:8499/en/blog/
+# Optional comparison server:
+./examples/symfony/serve.sh stock
+# Open http://localhost:8500/en/blog/
 ```
 
-PHP’s configure probes also hard-code `-lsqlite3`, so the build creates `/opt/turso/lib/libsqlite3.so -> libturso_sqlite3.so` before configuring. Without this alias, the installed system SQLite library causes false capability detection and a link failure for `sqlite3_load_extension`.
+Setup fetches the pinned commit into ignored `work/symfony-demo`, installs its locked dependencies inside the stock PHP container, and runs its normal asset/setup scripts. The upstream scripts create `.env.local`; the application/test runs can modify the disposable databases and cache. No migrations, fixtures reload, or application source changes are necessary. Test output is saved locally in `results/symfony-full-{stock,turso}.txt`.
 
-The FrankenPHP variant also rebuilds the ZTS embedded `libphp.so`, which the unchanged FrankenPHP executable loads. PHP source, Doctrine and application code are not patched. Turso's supplied header defines `SQLITE_OMIT_LOAD_EXTENSION`, so SQLite loadable-extension support is omitted in the Turso build. Both the CLI binary and embedded library linkage are recorded. Runtime results also record loaded SQLite library paths from `/proc/self/maps`.
+The upstream suite includes blog reads, search, login/authorization checks, and a comment-write flow. The HTTP server is an additional real FrankenPHP check. These are compatibility tests, not performance benchmarks.
 
-The Composer lock pins DBAL 4.5.0, ORM 3.5.8 and Symfony 7.3 components. The lock was generated with `composer update --no-install --no-blocking`, solely to permit the requested historical Symfony version in this disposable test environment. See `results/composer-audit.json`; this dependency set is not a production recommendation.
+Stop a server with `docker stop turso-symfony-demo` (or `stock-symfony-demo`); remove its container before recreating it. All example ports bind only to localhost.
 
-## Fixture handling
+## What changes underneath PHP
 
-- `fixtures/selected.folio`: byte-for-byte copy of `~/data/folio-bare/smith/nmafa.folio`, with no WAL present when copied. Stock SQLite integrity check passed. It contains 117 items and a JSON-based virtual generated column.
-- `fixtures/moma.pixy.db`: checked-in Survos Pixie fixture at a pinned repository commit.
-- `fixtures/bootstrap.folio.sqlite`: checked-in Folio bootstrap fixture, retained for further investigation.
-- `fixtures/minimal.sqlite`: synthetic three-row SQLite file; `tests/make_minimal.py` can regenerate it after explicitly removing the old file.
+```text
+Symfony → Doctrine → PHP PDO SQLite → libsqlite3
+                                    ↘ libturso_sqlite3
+```
 
-Exact origins and SHA-256 hashes are in `fixtures/provenance.json`. The original local Folio is never mounted into a container. Fixture mounts are read-only. Each PHP test process copies fixtures to its own disposable temporary directory before opening them. This allows SQLite WAL sidecar creation without altering the supplied database files. Deliberate write tests run only on those disposable copies or in-memory databases. No production data is needed.
+The images compile SQLite/PDO into PHP. `tests/rebuild-php.sh` rebuilds the unchanged PHP source against Turso's header and library. For FrankenPHP it also rebuilds the ZTS embedded `libphp.so`; the FrankenPHP executable stays unchanged. It uses `SQLITE_CFLAGS=-I/opt/turso/include` and `SQLITE_LIBS=-L/opt/turso/lib -Wl,-rpath,/opt/turso/lib -lturso_sqlite3`.
 
-The local Folio is excluded by `.gitignore`. Do not publish the local fixture or full fixture-derived results as part of an upstream bug report without reviewing their content. A synthetic reproducer should be used for public reports.
+PHP's configure probes separately hard-code `-lsqlite3`. The script creates a build-time `libsqlite3.so` alias to Turso so those probes do not accidentally inspect stock SQLite. Turso lacks SQLite's loadable-extension API, so that PHP capability is compiled out.
 
-## What the smoke suite measures
+The base experiment pins draft PR #8498 at `faac0360a3304b598da068a9c6fce356d532c195`; image bases and Composer dependencies are also pinned. Debian package mirrors are not snapshotted, so this is a reproducible recipe rather than a promise of byte-identical rebuilds. The C library and CLI are built together, which includes the CLI's core features, including FTS, through Cargo feature unification.
 
-24 independently executed cases cover SQLite3/PDO reads, named and positional parameters, JSON, pagination, commit/rollback, insert IDs, blobs/NULL, a scalar UDF, custom collation, constraint codes, read-only URI enforcement, DBAL queries/schema/savepoints, ORM schema creation and CRUD with JSON hydration, a booted Symfony 7.3 kernel request, Folio counts/joins/JSON/generated sorting/translations/catalog/schema, and Pixie catalog reads.
+## Development with Symfony CLI
 
-Every case runs in a separate PHP process with a 30-second timeout, so an exception, abort or crash cannot hide later results. A pass in the comparison means the case succeeds and returns exactly the same value as stock SQLite. Error-free execution alone is not counted as compatibility. See `tests/compare.py` and raw JSON results for distinctions between exceptions, process failures and value differences.
+FrankenPHP is not required for development. A separate native PHP CLI/FPM installation linked to Turso can be selected explicitly:
 
-The HTTP test runs the Symfony kernel request and Folio reads inside FrankenPHP's actual request handler. The CLI suite inside that image is separately recorded; it is not a substitute for HTTP validation.
+```bash
+# Illustrative: this native development runtime has not been built yet.
+export SYMFONY_CLI_PHP_BINARY_PATH="/absolute/path/to/turso-php/bin/php"
+symfony php -v
+symfony console about
+symfony server:start
+```
 
-## Experimental-feature diagnostic
+Symfony CLI detects companion FPM/CGI binaries in a conventional installation. Your stock PHP can remain installed. Native macOS development needs macOS PHP and Turso's `.dylib`; the Linux `.so` runtime is not usable natively on a Mac. See [Symfony's PHP selection documentation](https://github.com/symfony-cli/phpstore#version-selection).
 
-`run-experimental.sh` adds a tiny startup library that calls the PR's existing `turso_enable_experimental()` export. It does not replace SQLite functions or patch PHP/Turso, but it **is an extra deployment adaptation**, not the default drop-in behavior. It enables generated columns, vacuum, WITHOUT ROWID and ATTACH globally. Experimental and default results are recorded separately.
+## Additional experiments and evidence
 
-This is a focused smoke test, not the upstream PHP conformance suite, a performance benchmark, a concurrency test, a full Folio application boot, or a Dokku deployment. It does not establish production readiness.
+The older `run.sh` / `run-experimental.sh` suite covers 24 targeted cases, including synthetic Folio and public Pixie fixtures. It is optional and separate from the simpler Symfony demo. It deliberately exits non-zero on known mismatches, after saving results. A real local Folio can be selected explicitly with `python3 tests/prepare_fixtures.py --folio /path/to/checkpointed.folio`.
+
+**No local Folio or raw dataset results are committed.** `fixtures/`, `results/` and `work/` are ignored. Historical real-Folio results in [REPORT.md](REPORT.md) describe the earlier local run; they are not the clean-checkout default. Local provenance and raw JSON files mentioned there are generated evidence, not downloadable repository files.
+
+The Symfony 7.3 pins intentionally reproduce the requested historical stack. Regenerating the harness lock required Composer's advisory-blocking override. That exception is confined to this experimental project; it does not update or weaken any application configuration.

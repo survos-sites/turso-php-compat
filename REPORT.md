@@ -1,5 +1,13 @@
 # Observed results — 2026-09-30
 
+## Simpler public example: Symfony Demo
+
+Official Symfony Demo v2.8.1 (`c1691a84ccf7a4836d7a48355562b3c300924db5`) passes its entire suite on both stock SQLite and unpatched Turso PR #8498: **51 tests, 115 assertions**. The locked app uses Symfony 7.3.2, DBAL 4.3.2 and ORM 3.5.2. Tests ran using PHP 8.4.26 ZTS from the Debian FrankenPHP images. The blog also returns HTTP 200 with 10 posts through actual FrankenPHP. No experimental feature opt-in or application source patch was needed.
+
+The standalone DBAL example fetches the same official SQLite file by pinned URL and SHA-256. Both engines return 30 posts overall, matching join/count and parameterized tag-query results. This replaces the Folio as the default public example.
+
+The results below retain the historical, more demanding Folio/Pixie experiment.
+
 **The proof of concept works:** ordinary Doctrine DBAL can read an existing Folio through Turso, including joins, prepared parameters and its JSON-based virtual generated column. Debian-based FrankenPHP also successfully serves a Symfony 7.3 request and Folio reads. This currently requires an additional startup shim enabling Turso's experimental features; the default library cannot open this Folio.
 
 ## Tested configuration

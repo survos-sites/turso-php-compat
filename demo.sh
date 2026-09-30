@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")"
-engine=${1:-experimental}
+./fetch-demo.sh >&2
+engine=${1:-turso}
 extra=()
 case "$engine" in
   stock) tag=turso-8498-php-stock:isolated; extra=(-e ENGINE=stock) ;;
