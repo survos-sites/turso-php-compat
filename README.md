@@ -90,3 +90,10 @@ The older `run.sh` / `run-experimental.sh` suite covers 24 targeted cases, inclu
 **No local Folio or raw dataset results are committed.** `fixtures/`, `results/` and `work/` are ignored. Historical real-Folio results in [REPORT.md](REPORT.md) describe the earlier local run; they are not the clean-checkout default. Local provenance and raw JSON files mentioned there are generated evidence, not downloadable repository files.
 
 The Symfony 7.3 pins intentionally reproduce the requested historical stack. Regenerating the harness lock required Composer's advisory-blocking override. That exception is confined to this experimental project; it does not update or weaken any application configuration.
+
+## Native Turso driver experiment
+
+[Native PHP FFI + DBAL prototype](examples/native/README.md) opens Turso through its
+SDK kit alongside unchanged PDO SQLite. It needs neither a custom PHP build nor
+Podman. PHP 8.4 / DBAL 4 smoke tests pass for both connections; this is separate
+from the SQLite compatibility experiments above.
