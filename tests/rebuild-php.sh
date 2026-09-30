@@ -13,7 +13,7 @@ export SQLITE_LIBS='-L/opt/turso/lib -Wl,-rpath,/opt/turso/lib -lturso_sqlite3'
  --with-pic --enable-mbstring --enable-mysqlnd --with-password-argon2 \
  --with-sodium=shared --with-pdo-sqlite --with-sqlite3 --with-curl --with-iconv \
  --with-openssl --with-readline --with-zlib --enable-embed $zts
-make -j3
+make -j2
 make install
 ldconfig
 php -v

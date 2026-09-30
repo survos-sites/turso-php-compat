@@ -1,4 +1,38 @@
-# Turso for PHP: compatibility harness and experimental runtime
+# Turso for PHP: native driver and SQLite compatibility experiments
+
+## Start here: reproducible native comparison
+
+Native Turso runs beside stock PDO SQLite; it does not replace PHP's SQLite library.
+Install PHP 8.4 with FFI/PDO SQLite, Composer, Rust/rustup, a C compiler, Git and
+Python 3, then run:
+
+```bash
+git clone https://github.com/survos-sites/turso-php-compat.git
+cd turso-php-compat
+./reproduce.sh native
+# macOS Homebrew PHP 8.4:
+PHP_BIN=/opt/homebrew/opt/php@8.4/bin/php ./reproduce.sh native
+```
+
+The script fetches the pinned Turso source, builds its native SDK with two jobs,
+installs locked DBAL dependencies, and runs both engines through connection and
+relational correctness checks. Logs are in `results/`. Set `WORK_DIR` to place the
+source/build on another volume, or `TURSO_SOURCE` to reuse a checkout of the pinned
+revision. No service or container is started. macOS arm64 is verified; other hosts
+remain unverified. First setup requires network access and several GiB of space.
+
+**Priorities:** ordinary SQL, parameters/types, transactions, joins, grouping,
+indexes, persistence and errors first. Full-text is optional follow-up work.
+See the [native binding](examples/native/README.md) and the
+[IMDb relational workload](examples/imdb/README.md) for full-data preparation.
+The IMDb pipeline has been checked with synthetic input, not the full download.
+
+For the older container experiment below, `./reproduce.sh compat` builds the images,
+fetches the public demo and runs the DBAL examples and Symfony suite. `all` runs
+native then compat; Docker is required only for those explicitly selected modes.
+The container path was not rerun during the native-script change.
+
+## Earlier SQLite-library compatibility experiment
 
 Use the ordinary PDO SQLite driver with Turso's Rust SQLite-compatible engine. No custom Doctrine driver or application source patches.
 

@@ -3,7 +3,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends clang libclang-
 WORKDIR /src
 ARG TURSO_REV=faac0360a3304b598da068a9c6fce356d532c195
 RUN git init && git remote add origin https://github.com/tursodatabase/turso.git && git fetch --depth 1 origin ${TURSO_REV} && git checkout --detach FETCH_HEAD
-RUN cargo build --locked --release -p turso_sqlite3 -p turso_cli
+RUN cargo build -j2 --locked --release -p turso_sqlite3 -p turso_cli
 FROM debian:bookworm-slim@sha256:3783cc01769c7b2b1b83a5c5ad96c815348e28ed7da68e2e3687004faa906251
 COPY --from=build /src/target/release/libturso_sqlite3.so /opt/turso/lib/libturso_sqlite3.so
 COPY --from=build /src/target/release/tursodb /usr/local/bin/tursodb

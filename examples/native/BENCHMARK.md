@@ -1,6 +1,13 @@
 # Full-scale Folio benchmark design
 
-## Dataset and schema
+## Priority and dataset selection
+
+Start with ordinary relational correctness and the reproducible IMDb title/ratings
+workload in `../imdb`. FTS is a bonus, not a gate for the initial comparison. The
+large newspaper Folio below is a later application-validation candidate, not the
+mandatory first dataset. Select a separate text-rich corpus if/when FTS is tested.
+
+## Later Folio dataset and schema
 
 Use an entire large bare Folio, not a sampled subset. The local candidate is a
 4.7 GiB newspaper Folio with 1,311,865 items. Data files remain local and ignored.
