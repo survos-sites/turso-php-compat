@@ -1,0 +1,351 @@
+{
+    "build_profile": "lib-release",
+    "library_sha256": "4fb395a12e2317961951887867a54823f8d17954329763d9e7c2189528abe518",
+    "notice": "Buffered PHP adapter; preliminary application-path timings; not controlled cold-cache measurements",
+    "php": "8.4.25",
+    "source_sha256": "7d1957e341fc95fb56aa9f9366c0e764df5ac37a6696e6814c5e18e0cb001979",
+    "engine_order": [
+        "turso",
+        "sqlite"
+    ],
+    "dataset": {
+        "rows": {
+            "titles": 12824993,
+            "ratings": 1715569
+        },
+        "sqlite_version": "3.53.4",
+        "bytes": 1509404672
+    },
+    "sources": {
+        "title.basics.tsv.gz": {
+            "url": "https:\/\/datasets.imdbws.com\/title.basics.tsv.gz",
+            "sha256": "ab3ba3e975324c792ebd7330840c52474865c2ee764b79b1168f06450cfec4ee",
+            "bytes": 227786584,
+            "download_recorded_utc": "2026-09-30T14:48:50.607627+00:00"
+        },
+        "title.ratings.tsv.gz": {
+            "url": "https:\/\/datasets.imdbws.com\/title.ratings.tsv.gz",
+            "sha256": "7bc219554b25fc328793b4cbec63ae4cc2e8edb5b0681176fd9b65ceed6882fc",
+            "bytes": 8666395,
+            "download_recorded_utc": "2026-09-30T14:48:52.750942+00:00"
+        }
+    },
+    "turso": {
+        "copy_seconds": 1.720982166,
+        "journal_mode": "wal",
+        "synchronous": 2,
+        "version": "3.50.4",
+        "row_counts": {
+            "titles": 12824993,
+            "ratings": 1715569
+        },
+        "indexes": [
+            {
+                "sql": "CREATE INDEX titles_year ON titles(year,id)",
+                "seconds": 22.154532333
+            },
+            {
+                "sql": "CREATE INDEX titles_title ON titles(title,id)",
+                "seconds": 27.363120792
+            },
+            {
+                "sql": "CREATE INDEX ratings_votes ON ratings(votes DESC,title_id)",
+                "seconds": 2.57782375
+            }
+        ],
+        "index_seconds": 52.095568,
+        "plans": {
+            "year_filter": [
+                [
+                    1,
+                    0,
+                    0,
+                    "SEARCH titles USING INDEX titles_year (year>=? AND year<=?)"
+                ]
+            ],
+            "title_lookup": [
+                [
+                    1,
+                    0,
+                    0,
+                    "SEARCH titles USING COVERING INDEX titles_title (title=?)"
+                ]
+            ],
+            "join_top_votes": [
+                [
+                    1,
+                    0,
+                    0,
+                    "SEARCH r USING COVERING INDEX ratings_votes (votes<=?)"
+                ],
+                [
+                    2,
+                    0,
+                    0,
+                    "SEARCH t USING INDEX sqlite_autoindex_titles_1 (id=?)"
+                ],
+                [
+                    24,
+                    0,
+                    0,
+                    "USE SORTER FOR ORDER BY"
+                ]
+            ],
+            "group_counts": [
+                [
+                    1,
+                    0,
+                    0,
+                    "SCAN titles"
+                ],
+                [
+                    4,
+                    0,
+                    0,
+                    "USE SORTER FOR GROUP BY"
+                ]
+            ],
+            "missing_rating": [
+                [
+                    1,
+                    0,
+                    0,
+                    "SCAN titles AS t USING COVERING INDEX sqlite_autoindex_titles_1"
+                ],
+                [
+                    2,
+                    0,
+                    0,
+                    "SEARCH r USING COVERING INDEX sqlite_autoindex_ratings_1 (title_id=?) LEFT-JOIN"
+                ]
+            ]
+        },
+        "queries": {
+            "year_filter": {
+                "first_ms": 0.44775,
+                "subsequent_ms": [
+                    0.150291,
+                    0.138416,
+                    0.135958
+                ],
+                "rows": 100,
+                "sha256": "747a91529996b524eaca5b7e176066e794069a093b9b04dbce379f4fb06dfc28"
+            },
+            "title_lookup": {
+                "first_ms": 0.095083,
+                "subsequent_ms": [
+                    0.084167,
+                    0.093375,
+                    0.092542
+                ],
+                "rows": 100,
+                "sha256": "9727dd14a0cc4d85837109d457746e51602780945baf1cc81560f60503cedff7"
+            },
+            "join_top_votes": {
+                "first_ms": 71.318667,
+                "subsequent_ms": [
+                    68.553666,
+                    68.0745,
+                    68.509583
+                ],
+                "rows": 100,
+                "sha256": "da4c46ca2b3987c0400571ea84b23df36046c1b85afe68f59ee86f976d77677c"
+            },
+            "group_counts": {
+                "first_ms": 4144.348167,
+                "subsequent_ms": [
+                    4134.163083,
+                    4166.785125,
+                    4118.532541
+                ],
+                "rows": 11,
+                "sha256": "37b5eeb1c8e81ff86e437b55aa52b301c32b2cf3e6c928d6ec0b74404d8d329a"
+            },
+            "missing_rating": {
+                "first_ms": 0.885083,
+                "subsequent_ms": [
+                    0.841042,
+                    0.831041,
+                    0.824083
+                ],
+                "rows": 100,
+                "sha256": "4012ba72af40ad4e407a4dd4ecffe51df19bb2c6dc45ebe096fe6c2529870516"
+            }
+        },
+        "files_before_checkpoint": {
+            "test.turso": 2454462464,
+            "test.turso-wal": 74258912
+        },
+        "checkpoint_result": [
+            [
+                0,
+                0,
+                0
+            ]
+        ],
+        "checkpoint_seconds": 0.002891625,
+        "files_after_close": {
+            "test.turso": 2454462464,
+            "test.turso-wal": 0
+        }
+    },
+    "sqlite": {
+        "copy_seconds": 9.755769,
+        "journal_mode": "wal",
+        "synchronous": 2,
+        "version": "3.53.4",
+        "row_counts": {
+            "titles": 12824993,
+            "ratings": 1715569
+        },
+        "indexes": [
+            {
+                "sql": "CREATE INDEX titles_year ON titles(year,id)",
+                "seconds": 5.7740135
+            },
+            {
+                "sql": "CREATE INDEX titles_title ON titles(title,id)",
+                "seconds": 9.102894708
+            },
+            {
+                "sql": "CREATE INDEX ratings_votes ON ratings(votes DESC,title_id)",
+                "seconds": 0.566069834
+            }
+        ],
+        "index_seconds": 15.443070708,
+        "plans": {
+            "year_filter": [
+                [
+                    5,
+                    0,
+                    164,
+                    "SEARCH titles USING INDEX titles_year (year>? AND year<?)"
+                ]
+            ],
+            "title_lookup": [
+                [
+                    4,
+                    0,
+                    54,
+                    "SEARCH titles USING COVERING INDEX titles_title (title=?)"
+                ]
+            ],
+            "join_top_votes": [
+                [
+                    6,
+                    0,
+                    195,
+                    "SEARCH r USING COVERING INDEX ratings_votes (votes>?)"
+                ],
+                [
+                    10,
+                    0,
+                    46,
+                    "SEARCH t USING INDEX sqlite_autoindex_titles_1 (id=?)"
+                ],
+                [
+                    35,
+                    0,
+                    0,
+                    "USE TEMP B-TREE FOR LAST TERM OF ORDER BY"
+                ]
+            ],
+            "group_counts": [
+                [
+                    7,
+                    0,
+                    216,
+                    "SCAN titles"
+                ],
+                [
+                    9,
+                    0,
+                    0,
+                    "USE TEMP B-TREE FOR GROUP BY"
+                ]
+            ],
+            "missing_rating": [
+                [
+                    5,
+                    0,
+                    211,
+                    "SCAN t USING COVERING INDEX sqlite_autoindex_titles_1"
+                ],
+                [
+                    7,
+                    0,
+                    45,
+                    "SEARCH r USING COVERING INDEX sqlite_autoindex_ratings_1 (title_id=?) LEFT-JOIN"
+                ]
+            ]
+        },
+        "queries": {
+            "year_filter": {
+                "first_ms": 0.111958,
+                "subsequent_ms": [
+                    0.041333,
+                    0.036208,
+                    0.034333
+                ],
+                "rows": 100,
+                "sha256": "747a91529996b524eaca5b7e176066e794069a093b9b04dbce379f4fb06dfc28"
+            },
+            "title_lookup": {
+                "first_ms": 0.023542,
+                "subsequent_ms": [
+                    0.017542,
+                    0.016667,
+                    0.016459
+                ],
+                "rows": 100,
+                "sha256": "9727dd14a0cc4d85837109d457746e51602780945baf1cc81560f60503cedff7"
+            },
+            "join_top_votes": {
+                "first_ms": 0.347708,
+                "subsequent_ms": [
+                    0.12825,
+                    0.10225,
+                    0.096458
+                ],
+                "rows": 100,
+                "sha256": "da4c46ca2b3987c0400571ea84b23df36046c1b85afe68f59ee86f976d77677c"
+            },
+            "group_counts": {
+                "first_ms": 2630.539208,
+                "subsequent_ms": [
+                    2630.277708,
+                    2712.062166,
+                    2664.448083
+                ],
+                "rows": 11,
+                "sha256": "37b5eeb1c8e81ff86e437b55aa52b301c32b2cf3e6c928d6ec0b74404d8d329a"
+            },
+            "missing_rating": {
+                "first_ms": 0.2285,
+                "subsequent_ms": [
+                    0.187,
+                    0.184708,
+                    0.183459
+                ],
+                "rows": 100,
+                "sha256": "4012ba72af40ad4e407a4dd4ecffe51df19bb2c6dc45ebe096fe6c2529870516"
+            }
+        },
+        "files_before_checkpoint": {
+            "test.sqlite": 2342457344,
+            "test.sqlite-shm": 1015808,
+            "test.sqlite-wal": 520932832
+        },
+        "checkpoint_result": [
+            [
+                0,
+                0,
+                0
+            ]
+        ],
+        "checkpoint_seconds": 0.0090575,
+        "files_after_close": {
+            "test.sqlite": 2342457344
+        }
+    }
+}

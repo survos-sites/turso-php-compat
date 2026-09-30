@@ -1,0 +1,114 @@
+{
+    "sqlite": {
+        "joined_id": {
+            "ms": [
+                42.70625,
+                0.191792,
+                0.104291,
+                0.0905,
+                0.078333
+            ],
+            "sha256": "da4c46ca2b3987c0400571ea84b23df36046c1b85afe68f59ee86f976d77677c",
+            "plan": [
+                [
+                    6,
+                    0,
+                    195,
+                    "SEARCH r USING COVERING INDEX ratings_votes (votes>?)"
+                ],
+                [
+                    10,
+                    0,
+                    46,
+                    "SEARCH t USING INDEX sqlite_autoindex_titles_1 (id=?)"
+                ],
+                [
+                    35,
+                    0,
+                    0,
+                    "USE TEMP B-TREE FOR LAST TERM OF ORDER BY"
+                ]
+            ]
+        },
+        "indexed_id": {
+            "ms": [
+                0.062458,
+                0.061,
+                0.060542,
+                0.064125,
+                0.059958
+            ],
+            "sha256": "da4c46ca2b3987c0400571ea84b23df36046c1b85afe68f59ee86f976d77677c",
+            "plan": [
+                [
+                    6,
+                    0,
+                    195,
+                    "SEARCH r USING COVERING INDEX ratings_votes (votes>?)"
+                ],
+                [
+                    10,
+                    0,
+                    46,
+                    "SEARCH t USING INDEX sqlite_autoindex_titles_1 (id=?)"
+                ]
+            ]
+        }
+    },
+    "turso": {
+        "joined_id": {
+            "ms": [
+                2974.441791,
+                66.926208,
+                66.007166,
+                66.100792,
+                67.6785
+            ],
+            "sha256": "da4c46ca2b3987c0400571ea84b23df36046c1b85afe68f59ee86f976d77677c",
+            "plan": [
+                [
+                    1,
+                    0,
+                    0,
+                    "SEARCH r USING COVERING INDEX ratings_votes (votes<=?)"
+                ],
+                [
+                    2,
+                    0,
+                    0,
+                    "SEARCH t USING INDEX sqlite_autoindex_titles_1 (id=?)"
+                ],
+                [
+                    24,
+                    0,
+                    0,
+                    "USE SORTER FOR ORDER BY"
+                ]
+            ]
+        },
+        "indexed_id": {
+            "ms": [
+                0.468,
+                0.379625,
+                0.371167,
+                0.367958,
+                0.3675
+            ],
+            "sha256": "da4c46ca2b3987c0400571ea84b23df36046c1b85afe68f59ee86f976d77677c",
+            "plan": [
+                [
+                    1,
+                    0,
+                    0,
+                    "SEARCH r USING COVERING INDEX ratings_votes (votes<=?)"
+                ],
+                [
+                    2,
+                    0,
+                    0,
+                    "SEARCH t USING INDEX sqlite_autoindex_titles_1 (id=?)"
+                ]
+            ]
+        }
+    }
+}

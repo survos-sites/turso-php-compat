@@ -15,7 +15,7 @@ $observed = [];
 foreach (['sqlite', 'turso'] as $engine) {
     $db = DriverManager::getConnection($engine === 'sqlite' ? ['driver' => 'pdo_sqlite', 'memory' => true] : [
         'driverClass' => Driver::class, 'path' => ':memory:',
-        'library' => "$source/target/debug/libturso_sdk_kit.$ext", 'header' => "$source/sdk-kit/turso.h",
+        'library' => (getenv('TURSO_LIBRARY') ?: "$source/target/debug/libturso_sdk_kit.$ext"), 'header' => "$source/sdk-kit/turso.h",
     ]);
     $db->executeStatement('CREATE TABLE movies (id INTEGER PRIMARY KEY, title TEXT NOT NULL, year INTEGER, metadata TEXT)');
     $db->executeStatement('CREATE TABLE ratings (movie_id INTEGER PRIMARY KEY, votes INTEGER NOT NULL, rating REAL)');

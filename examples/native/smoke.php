@@ -17,7 +17,7 @@ $outputs = [];
 foreach (['sqlite', 'turso'] as $engine) {
     $params = $engine === 'sqlite' ? ['driver' => 'pdo_sqlite', 'path' => "$directory/test.sqlite"] : [
         'driverClass' => Driver::class, 'path' => "$directory/test.turso",
-        'library' => "$source/target/debug/libturso_sdk_kit.$extension", 'header' => "$source/sdk-kit/turso.h",
+        'library' => (getenv('TURSO_LIBRARY') ?: "$source/target/debug/libturso_sdk_kit.$extension"), 'header' => "$source/sdk-kit/turso.h",
     ];
     $db = DriverManager::getConnection($params);
     $db->executeStatement('CREATE TABLE teachers (id INTEGER PRIMARY KEY, name TEXT NOT NULL UNIQUE)');

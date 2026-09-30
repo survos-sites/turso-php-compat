@@ -25,7 +25,10 @@ remain unverified. First setup requires network access and several GiB of space.
 indexes, persistence and errors first. Full-text is optional follow-up work.
 See the [native binding](examples/native/README.md) and the
 [IMDb relational workload](examples/imdb/README.md) for full-data preparation.
-The IMDb pipeline has been checked with synthetic input, not the full download.
+**Full-scale IMDb results:** 12.8 million titles and 1.7 million ratings, with
+matching query results across both engines. SQLite was faster and smaller in this
+experiment. See the [report and raw evidence](examples/imdb/REPORT.md); FTS remains
+optional follow-up.
 
 For the older container experiment below, `./reproduce.sh compat` builds the images,
 fetches the public demo and runs the DBAL examples and Symfony suite. `all` runs

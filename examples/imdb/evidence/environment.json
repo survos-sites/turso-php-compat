@@ -1,0 +1,20 @@
+{
+  "date": "2026-09-30",
+  "hardware": "Apple M4 Pro, 14 cores, 48 GB RAM",
+  "os": "macOS 27.0 (26A428)",
+  "storage": "X10 USB SSD, case-sensitive APFS; both derivatives on same volume",
+  "php": "8.4.25 Homebrew",
+  "dbal": "4.3.2",
+  "turso_source": "faac0360a3304b598da068a9c6fce356d532c195",
+  "sdk_profile": "lib-release; optimized; codegen-units=16; LTO=false; debug=false",
+  "rust_toolchain": "1.88",
+  "build_jobs": 2,
+  "fts_enabled": false,
+  "reverse_run_process": {
+    "wall_seconds": 110.86,
+    "maximum_resident_set_bytes": 2055012352,
+    "peak_memory_footprint_bytes": 851691080,
+    "swaps": 0
+  },
+  "memory_note": "OS time measurements cover combined PHP process for both engines, not individual-engine peaks."
+}

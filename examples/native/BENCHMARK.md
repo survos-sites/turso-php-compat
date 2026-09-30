@@ -53,5 +53,5 @@ No vector indexes or embeddings in this experiment.
 - Peak process memory and matching result counts/checksums.
 
 Execute one engine/build at a time with bounded compilation parallelism. Keep the
-existing SQLite compatibility report separate from native SDK results. No full-scale
-benchmark has been run yet.
+existing SQLite compatibility report separate from native SDK results. The [IMDb relational benchmark](../imdb/REPORT.md) has now run at full scale.
+The Folio-specific and FTS stages described here remain deferred.
