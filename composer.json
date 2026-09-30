@@ -1,0 +1,33 @@
+{
+  "name": "survos/turso-8498-smoke",
+  "description": "Isolated compatibility experiment; not an application migration",
+  "require": {
+    "php": "~8.4.0",
+    "ext-pdo": "*",
+    "ext-pdo_sqlite": "*",
+    "ext-sqlite3": "*",
+    "doctrine/dbal": "^4.0",
+    "doctrine/orm": "~3.5.0",
+    "symfony/framework-bundle": "7.3.*",
+    "symfony/cache": "7.3.*",
+    "symfony/config": "7.3.*",
+    "symfony/console": "7.3.*",
+    "symfony/dependency-injection": "7.3.*",
+    "symfony/error-handler": "7.3.*",
+    "symfony/event-dispatcher": "7.3.*",
+    "symfony/filesystem": "7.3.*",
+    "symfony/finder": "7.3.*",
+    "symfony/http-foundation": "7.3.*",
+    "symfony/http-kernel": "7.3.*",
+    "symfony/routing": "7.3.*",
+    "symfony/string": "7.3.*",
+    "symfony/var-dumper": "7.3.*",
+    "symfony/var-exporter": "7.3.*"
+  },
+  "config": {
+    "platform": {
+      "php": "8.4.0"
+    },
+    "allow-plugins": false
+  }
+}
