@@ -16,7 +16,7 @@ mkdir($directory);
 $outputs = [];
 foreach (['sqlite', 'turso'] as $engine) {
     $params = $engine === 'sqlite' ? ['driver' => 'pdo_sqlite', 'path' => "$directory/test.sqlite"] : [
-        'driverClass' => Driver::class, 'path' => "$directory/test.foliot",
+        'driverClass' => Driver::class, 'path' => "$directory/test.turso",
         'library' => "$source/target/debug/libturso_sdk_kit.$extension", 'header' => "$source/sdk-kit/turso.h",
     ];
     $db = DriverManager::getConnection($params);

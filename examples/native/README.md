@@ -33,7 +33,7 @@ The SDK README's C example is stale at this revision; the actual `turso.h` is us
 
 The build uses two compilation jobs and the debug profile. It does not install
 anything into PHP or replace system libraries. Each smoke run creates a fresh
-temporary directory containing `test.sqlite` and `test.foliot`, and prints its path.
+temporary directory containing `test.sqlite` and `test.turso`, and prints its path.
 It does not open or modify the user's Folios.
 
 ## Verified
@@ -52,13 +52,13 @@ require 'Driver.php';
 
 $db = Doctrine\DBAL\DriverManager::getConnection([
     'driverClass' => Survos\TursoPrototype\Driver::class,
-    'path' => '/absolute/path/test.foliot',
+    'path' => '/absolute/path/test.turso',
     'library' => '/path/to/turso/target/debug/libturso_sdk_kit.dylib',
     'header' => '/path/to/turso/sdk-kit/turso.h',
 ]);
 ```
 
-Linux library extension is `.so`. The `.foliot` suffix is only a naming convention.
+Linux library extension is `.so`. The `.turso` suffix is only a naming convention.
 A `turso://` URL mapping and Symfony DoctrineBundle configuration are not yet
 implemented. DBAL itself is unchanged; the adapter reuses its SQLite SQL platform.
 
